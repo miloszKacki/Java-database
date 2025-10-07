@@ -1,0 +1,21 @@
+package org.example;
+
+import java.util.ArrayList;
+
+public class MockFile implements myFileable{
+
+    private ArrayList<Record> recordlist;
+
+    @Override
+    public Record popRecord() throws FileEmptyException{
+        if(!recordlist.isEmpty()){
+            return recordlist.removeLast();
+        }
+        throw new FileEmptyException();
+    }
+
+    @Override
+    public void saveRecord(Record record) {
+        recordlist.add(record);
+    }
+}
