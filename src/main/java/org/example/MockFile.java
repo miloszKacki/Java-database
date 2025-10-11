@@ -18,4 +18,9 @@ public class MockFile implements myFileable{
     public void saveRecord(Record record) {
         recordlist.add(record);
     }
+
+    @Override
+    public boolean isEmpty(){
+        return recordlist.isEmpty();
+    }
 }

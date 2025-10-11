@@ -1,4 +1,4 @@
 package org.example;
 
-public class FileEmptyException extends Exception{
+public class FileEmptyException extends RuntimeException{
 }

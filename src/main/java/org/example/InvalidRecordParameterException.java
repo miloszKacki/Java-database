@@ -1,5 +1,5 @@
 package org.example;
 
-public class NegativeRecordParameterException extends RuntimeException{
+public class InvalidRecordParameterException extends RuntimeException{
     //Records for the exercise cannot have negative values
 }

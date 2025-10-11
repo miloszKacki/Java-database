@@ -28,19 +28,19 @@ public class Record {
     public void setA(int a) {
         if (a > 0) this.a = a;
         else
-            throw new NegativeRecordParameterException();
+            throw new InvalidRecordParameterException();
     }
 
     public void setB(int b) {
         if (a > 0) this.b = b;
         else
-            throw new NegativeRecordParameterException();
+            throw new InvalidRecordParameterException();
     }
 
     public void setAngle(float angle) {
         if (a > 0) this.angle = angle;
         else
-            throw new NegativeRecordParameterException();
+            throw new InvalidRecordParameterException();
     }
 
     //getters
