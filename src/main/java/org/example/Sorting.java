@@ -38,6 +38,7 @@ public class Sorting {
     //this method should not be called if one of the "from" tapes is empty TODO Exception?
     //TODO runs counting
     private void mergeRuns(int indexFrom1, int indexFrom2, int indexTo){
+
         Record record1,record2, record1Last, record2Last;
 
         record1 = Tapes.get(indexFrom1).popRecord();
@@ -45,17 +46,23 @@ public class Sorting {
 
         //used to signal that one of the runs has ended
         //and on which tape did this occur.
-        int runEnded;
+        //"-1" means no run ended yet
+        int runEnded = -1;
 
-        //Merge until one of the runs ends
+        //Merging
         while(true){
-            if(comparator.compare(record1,record2) > 0){
+            if(runEnded == 2 || comparator.compare(record1,record2) > 0){
 
                 Tapes.get(indexTo).saveRecord(record1);
 
-                //if this was the last record in file, just get the run from the other file
+                //if this was the last record in file,
+                //get the run from the other file or end merging
                 if (Tapes.get(indexFrom1).isEmpty()){
-                    runEnded = 1;
+                    //"the run has ended and if the other one did too, stop the merge"
+                    if (runEnded == -1){
+                        runEnded = 1;
+                        continue;
+                    }
                     break;
                 }
 
@@ -64,10 +71,13 @@ public class Sorting {
 
                 // if record is less than the last record on tape, the run has ended on the tape
                 // put back the first record of the new run,
-                // and signal to just get the rest of the run from the other tape (runEnded)
+                // get the run from the other file or end merging
                 if(comparator.compare(record1,record1Last) < 0){
                     Tapes.get(indexFrom1).saveRecord(record1);
-                    runEnded = 1;
+                    if (runEnded == -1){
+                        runEnded = 1;
+                        continue;
+                    }
                     break;
                 }
             }
@@ -75,7 +85,10 @@ public class Sorting {
                 Tapes.get(indexTo).saveRecord(record2);
 
                 if (Tapes.get(indexFrom2).isEmpty()){
-                    runEnded = 2;
+                    if (runEnded == -1){
+                        runEnded = 2;
+                        continue;
+                    }
                     break;
                 }
 
@@ -84,42 +97,18 @@ public class Sorting {
 
                 if(comparator.compare(record2,record2Last) < 0){
                     Tapes.get(indexFrom2).saveRecord(record2);
-                    runEnded = 2;
+
+                    if (runEnded == -1){
+                        runEnded = 2;
+                        continue;
+                    }
                     break;
                 }
             }
         }
 
-        //put the rest of the not ended run in the destination file
-        while(true){
-            //checking this inside of the loop is suboptimal but cleaner
-            if (runEnded == 1){
-                Tapes.get(indexTo).saveRecord(record2);
 
-                if (Tapes.get(indexFrom2).isEmpty()) return;
 
-                record2Last = record2;
-                record2 = Tapes.get(indexFrom2).popRecord();
-
-                if(comparator.compare(record2,record2Last) < 0){
-                    Tapes.get(indexFrom2).saveRecord(record2);
-                    return;
-                }
-            }
-            else{
-                Tapes.get(indexTo).saveRecord(record1);
-
-                if (Tapes.get(indexFrom1).isEmpty()) return;
-
-                record1Last = record1;
-                record1 = Tapes.get(indexFrom1).popRecord();
-
-                if(comparator.compare(record1,record1Last) < 0){
-                    Tapes.get(indexFrom1).saveRecord(record1);
-                    return;
-                }
-            }
-        }
     }
 
 
