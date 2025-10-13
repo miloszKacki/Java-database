@@ -1,53 +1,90 @@
 package org.example;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 
 public class Sorting {
-    static final int number_of_tapes = 3;
-    ArrayList<myFileable> Tapes;
-    //TODO switch those two arraylists to suitable data structures
-    ArrayList<Integer> runsAmmounts;
-    myFileable OriginFile;
-    Comparator<Record> comparator;
 
+    private static final int numberOfTapes = 3;
+    myFileable[] Tapes = new MockFile[numberOfTapes];
+    //TODO switch those two arraylists to suitable data structures
+    int[] numbersOfRuns = new int[numberOfTapes];
+    myFileable OriginFile;
+
+    //records are supposed to be rising towards "input"
+    //r1=get r2=get compare(r1,r2) >= 0 is desired order
+    //Likewise, when compare(r1,r2) = 1 r1 goes in first
+    Comparator<Record> comparator;
 
     public Sorting(myFileable fileToSort, Comparator<Record> comparator){
         this.comparator = comparator;
         this.OriginFile = fileToSort;
-        Tapes = new ArrayList<>();
     }
 
     private void emptyTape(int tapeNumber){
-        while (!Tapes.get(tapeNumber).isEmpty()){
-            Tapes.get(tapeNumber).popRecord();
+        while (Tapes[tapeNumber].isEmpty()){
+            Tapes[tapeNumber].popRecord();
         }
+        numbersOfRuns[tapeNumber] =0;
     }
 
     private void insertFileIntoTape(myFileable fileToInsert,int tapeNumber){
+        emptyTape(tapeNumber);
+        if(fileToInsert.isEmpty()) return;
+
+        Record record,lastRecord;
+
+        record = fileToInsert.popRecord();
+        Tapes[tapeNumber].saveRecord(record);
+        numbersOfRuns[tapeNumber] +=1;
+
         while (!fileToInsert.isEmpty()){
-            Tapes.get(tapeNumber).saveRecord(fileToInsert.popRecord());
+            lastRecord = record;
+            record = fileToInsert.popRecord();
+            Tapes[tapeNumber].saveRecord(record);
+
+            if(comparator.compare(lastRecord,record) > 0)
+                numbersOfRuns[tapeNumber] +=1;
         }
     }
 
-    private void mergeTapes(int indexFrom1, int indexFrom2, int indexTo){
+    public myFileable FibosoSort(myFileable fileToSort,Comparator<Record> comparator){
 
+
+        int[] dummyRunsAmmounts = new int[numberOfTapes];
+
+
+        return fileToSort;
     }
 
+    private void mergeTapes(int indexFrom1, int indexFrom2, int indexTo){
+    }
+
+    private void splitIntoRuns(int indexFrom, int indexTo1, int indexTo2){
+    }
+
+    //This shit doesnt work, need to be rewritten
     //Method "takes" a single run from two files and merges them into one run on the destination file
     //this method should not be called if one of the "from" tapes is empty TODO Exception?
     //TODO runs counting
+    /*
     private void mergeRuns(int indexFrom1, int indexFrom2, int indexTo){
 
         Record record1,record2, record1Last, record2Last;
-
-        record1 = Tapes.get(indexFrom1).popRecord();
-        record2 = Tapes.get(indexFrom2).popRecord();
 
         //used to signal that one of the runs has ended
         //and on which tape did this occur.
         //"-1" means no run ended yet
         int runEnded = -1;
+
+        //if(!Tapes.get(indexFrom1).isEmpty())
+            record1 = Tapes.get(indexFrom1).popRecord();
+        //else
+            runEnded = 1;
+        //if(!Tapes.get(indexFrom2).isEmpty())
+            record2 = Tapes.get(indexFrom2).popRecord();
+        //else
+        //    if (runEnded != -1)
+        //return;
 
         //Merging
         while(true){
@@ -106,10 +143,6 @@ public class Sorting {
                 }
             }
         }
-
-
-
     }
-
-
+*/
 }

@@ -9,7 +9,7 @@ public class MockFile implements myFileable{
     @Override
     public Record popRecord() throws FileEmptyException{
         if(!recordlist.isEmpty()){
-            return recordlist.removeLast();
+            return recordlist.removeFirst();
         }
         throw new FileEmptyException();
     }
