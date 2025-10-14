@@ -1,10 +1,18 @@
 package org.example;
 
+import org.example.files.MockFile;
+import org.example.files.myFileable;
+
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.stream.IntStream;
 
 public class Sorting {
 
     private static final int numberOfTapes = 3;
+    private static final int initialFileTapeIndex = 2;
+    private static final int initialBiggerFiboTapeIndex = 0;
+    private static final int initialSmallerFiboTapeIndex = 1;
     myFileable[] Tapes = new MockFile[numberOfTapes];
     //TODO switch those two arraylists to suitable data structures
     int[] numbersOfRuns = new int[numberOfTapes];
@@ -49,17 +57,47 @@ public class Sorting {
 
     public myFileable FibosoSort(myFileable fileToSort,Comparator<Record> comparator){
 
+        insertFileIntoTape(fileToSort,initialFileTapeIndex);
+        splitIntoRunsFibo(initialFileTapeIndex, initialBiggerFiboTapeIndex, initialSmallerFiboTapeIndex);
 
-        int[] dummyRunsAmmounts = new int[numberOfTapes];
+        //ammount of dummy runs, paired with index of a tape they're on
+        int[] dummyRunsInfo = new int[numberOfTapes];
+        Arrays.fill(dummyRunsInfo,0);
 
+        assignDummyRuns(dummyRunsInfo);
 
-        return fileToSort;
+        //Designate tapes
+        int emptyTapeIndex,smallerFiboTapeIndex,biggerFiboTapeIndex;
+        emptyTapeIndex = initialFileTapeIndex;
+        smallerFiboTapeIndex = initialSmallerFiboTapeIndex;
+        biggerFiboTapeIndex = initialBiggerFiboTapeIndex;
+
+        while(IntStream.of(numbersOfRuns).sum() > 1){
+            //merge tapes
+            mergeTapesFibo(biggerFiboTapeIndex,smallerFiboTapeIndex,emptyTapeIndex);
+            //update tape designations
+            int tmp = smallerFiboTapeIndex;
+            smallerFiboTapeIndex = emptyTapeIndex;
+            emptyTapeIndex = biggerFiboTapeIndex;
+            biggerFiboTapeIndex = tmp;
+
+            assignDummyRuns(dummyRunsInfo);
+        }
+
+        //we use this index because the last merge was into the empty tape
+        // witch's index got written into smallerFiboTapeIndex during last loop iteration
+        return Tapes[smallerFiboTapeIndex];
     }
 
-    private void mergeTapes(int indexFrom1, int indexFrom2, int indexTo){
+    private void assignDummyRuns(int[] dummyTapesArray){
+
     }
 
-    private void splitIntoRuns(int indexFrom, int indexTo1, int indexTo2){
+    private void mergeTapesFibo(int indexFromBigger, int indexFromSmaller, int indexTo){
+    }
+
+    //Returns the number of dummy files needed for the longer fibo tape
+    private void splitIntoRunsFibo(int indexFrom, int indexToBigger, int indexToSmaller){
     }
 
     //This shit doesnt work, need to be rewritten

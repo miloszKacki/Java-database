@@ -1,5 +1,7 @@
 package org.example;
 
+import org.example.exceptions.InvalidRecordParameterException;
+
 public class Record {
 
     //This is a record of a parallelogram

@@ -1,4 +1,7 @@
-package org.example;
+package org.example.files;
+
+import org.example.exceptions.FileEmptyException;
+import org.example.Record;
 
 public interface myFileable {
     public Record popRecord() throws FileEmptyException;

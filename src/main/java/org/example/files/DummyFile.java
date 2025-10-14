@@ -1,4 +1,8 @@
-package org.example;
+package org.example.files;
+
+import org.example.exceptions.DummyFileUsedAsFileException;
+import org.example.exceptions.FileEmptyException;
+import org.example.Record;
 
 public class DummyFile implements myFileable{
     @Override
