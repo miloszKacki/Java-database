@@ -22,9 +22,10 @@ public class Sorting {
     //r1=get r2=get compare(r1,r2) >= 0 is desired order
     //Likewise, when compare(r1,r2) = 1 r1 goes in first
     Comparator<Record> comparator;
+    boolean descendingOrder;
 
-    public Sorting(myFileable fileToSort, Comparator<Record> comparator){
-        this.comparator = comparator;
+    public Sorting(myFileable fileToSort, boolean descendingOrder){
+        this.descendingOrder = descendingOrder;
         this.OriginFile = fileToSort;
     }
 
@@ -35,6 +36,7 @@ public class Sorting {
         numbersOfRuns[tapeNumber] =0;
     }
 
+    //Prolly shouldn't be used (!)
     private void insertFileIntoTape(myFileable fileToInsert,int tapeNumber){
         emptyTape(tapeNumber);
         if(fileToInsert.isEmpty()) return;
@@ -57,13 +59,11 @@ public class Sorting {
 
     public myFileable FibosoSort(myFileable fileToSort,Comparator<Record> comparator){
 
-        insertFileIntoTape(fileToSort,initialFileTapeIndex);
-        splitIntoRunsFibo(initialFileTapeIndex, initialBiggerFiboTapeIndex, initialSmallerFiboTapeIndex);
+        insertFileIntoTapeFibo(fileToSort,initialBiggerFiboTapeIndex,initialSmallerFiboTapeIndex);
 
-        //ammount of dummy runs, paired with index of a tape they're on
+        //ammounts of dummy runs, on tapes with selected index
         int[] dummyRunsInfo = new int[numberOfTapes];
         Arrays.fill(dummyRunsInfo,0);
-
         assignDummyRuns(dummyRunsInfo);
 
         //Designate tapes
@@ -92,16 +92,68 @@ public class Sorting {
         return Tapes[smallerFiboTapeIndex];
     }
 
-    private void assignDummyRuns(int[] dummyTapesArray){
-
-    }
+    /*
+    //TODO Ask prof wtf he ment in his lecture slideshow
+    private int[] assignDummyRuns(int biggetFiboTapeIndex, int smallerFiboTapeIndex){
+        if ()
+        int bestBigFiboSize = numbersOfRuns[smallerFiboTapeIndex]
+    }*/
 
     private void mergeTapesFibo(int indexFromBigger, int indexFromSmaller, int indexTo){
     }
 
-    //Returns the number of dummy files needed for the longer fibo tape
-    private void splitIntoRunsFibo(int indexFrom, int indexToBigger, int indexToSmaller){
+    //We want to try make it so that the bigger tape can be adjusted to fibo proportions by adding dummy runs
+    //Get a pair of ints that follow the proportions
+    //put the runs into smaller tape
+    //put the runs into larger tape
+    //repeat
+    //we hope that file ends on the big tape's "turn"
+    //TODO maybe move some runs around at the end if it doesnt happen?
+    private void insertFileIntoTapeFibo(myFileable fileToInsert,int bigTapeIndex, int smallTapeIndex){
+        emptyTape(bigTapeIndex);
+        emptyTape(smallTapeIndex);
+        numbersOfRuns[bigTapeIndex] =0;
+        numbersOfRuns[smallTapeIndex] =0;
+
+        if(fileToInsert.isEmpty()) return;
+
+        Record record,lastRecord;
+        int[] fiboPair = {1,1};
+
+        record = fileToInsert.popRecord();
+        Tapes[bigTapeIndex].saveRecord(record);
+        numbersOfRuns[bigTapeIndex] +=1;
+
+        while(!fileToInsert.isEmpty()){
+
+            while(numbersOfRuns[smallTapeIndex] < fiboPair[0]){
+                if(fileToInsert.isEmpty()) break;
+                //Get record from file
+                lastRecord = record;
+                record = fileToInsert.popRecord();
+                //Put record on file -keep track of the
+                Tapes[smallTapeIndex].saveRecord(record);
+                if ((record.compareTo(lastRecord) < 0)^(descendingOrder)) numbersOfRuns[smallTapeIndex] += 1;
+            }
+
+            while(numbersOfRuns[bigTapeIndex] < fiboPair[1]){
+                if(fileToInsert.isEmpty()) break;
+
+                lastRecord = record;
+                record = fileToInsert.popRecord();
+
+                Tapes[bigTapeIndex].saveRecord(record);
+                if ((record.compareTo(lastRecord) < 0)^(descendingOrder)) numbersOfRuns[bigTapeIndex] += 1;
+            }
+
+            increaseFiboPair(fiboPair);
+        }
     }
 
-    
+    private void increaseFiboPair(int[] fiboPair){
+        int next = fiboPair[0] + fiboPair[1];
+        fiboPair[0] = fiboPair[1];
+        fiboPair[1] = next;
+    }
+
 }
