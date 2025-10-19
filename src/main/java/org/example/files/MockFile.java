@@ -9,8 +9,12 @@ public class MockFile implements myFileable{
 
     private ArrayList<Record> recordlist;
 
+    public MockFile(){
+        recordlist = new ArrayList<Record>();
+    }
+
     @Override
-    public Record popRecord() throws FileEmptyException {
+    public Record getRecord() throws FileEmptyException {
         if(!recordlist.isEmpty()){
             return recordlist.removeFirst();
         }
@@ -25,5 +29,14 @@ public class MockFile implements myFileable{
     @Override
     public boolean isEmpty(){
         return recordlist.isEmpty();
+    }
+
+    @Override
+    public String toString(){
+        String s = new String("Mock: ");
+        for (int i=0;i < recordlist.size();i++){
+            s = s.concat(Float.toString(recordlist.get(i).getField())).concat(" ");
+        }
+        return s;
     }
 }

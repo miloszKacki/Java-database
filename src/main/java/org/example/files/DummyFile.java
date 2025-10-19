@@ -6,7 +6,7 @@ import org.example.Record;
 
 public class DummyFile implements myFileable{
     @Override
-    public Record popRecord() throws FileEmptyException {
+    public Record getRecord() throws FileEmptyException {
         throw new DummyFileUsedAsFileException();
     }
 
@@ -19,4 +19,6 @@ public class DummyFile implements myFileable{
     public boolean isEmpty() {
         return true;
     }
+
+
 }

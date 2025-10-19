@@ -2,6 +2,8 @@ package org.example;
 
 import org.example.exceptions.InvalidRecordParameterException;
 
+import java.util.Random;
+
 public class Record implements Comparable<Record>{
 
     //This is a record of a parallelogram
@@ -40,7 +42,7 @@ public class Record implements Comparable<Record>{
     }
 
     public void setAngle(float angle) {
-        if (a > 0 && angle < (Math.PI/2)) this.angle = angle;
+        if (angle > 0 && angle < (Math.PI/2)) this.angle = angle;
         else
             throw new InvalidRecordParameterException();
     }
@@ -58,6 +60,27 @@ public class Record implements Comparable<Record>{
     //last two methods are needed for the assignment to be graded well
     public float getField(){
         return (float)(a*Math.sin(angle)*b);
+    }
+    public static Record[] getRandomRecords(int numOfRandRecords){
+        Record[] output = new Record[numOfRandRecords];
+
+        Random random = new Random();
+
+        int a;
+        int b;
+        float angle;
+
+        for(int i=0;i<numOfRandRecords;i++){
+
+            a = Math.abs(random.nextInt());
+            b = Math.abs(random.nextInt());
+            //min + rand*(max-min)
+            angle = 0 + random.nextFloat()*((float)(Math.PI/2));
+
+            output[i] = new Record(a,b,angle);
+        }
+
+        return output;
     }
     @Override
     public int compareTo(Record other) {
