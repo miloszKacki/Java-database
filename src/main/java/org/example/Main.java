@@ -7,6 +7,10 @@ import org.example.files.myFileable;
 public class Main {
     public static void main(String[] args) {
 
+
+
+
+
         MockFile test = new MockFile();
 
         int numberOfTestRecords = 200;
@@ -25,4 +29,7 @@ public class Main {
         System.out.println(a[1]);
         for(int i=0;i<3;i++) System.out.println(testSort.getNumsOfRuns()[i]);
     }
+
+
+
 }

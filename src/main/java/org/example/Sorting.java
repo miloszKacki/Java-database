@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.stream.IntStream;
 
 public class Sorting {
-
     private static final int numberOfTapes = 3;
     private static final int initialFileTapeIndex = 2;
     private static final int initialBiggerFiboTapeIndex = 0;
@@ -59,6 +58,8 @@ public class Sorting {
     public myFileable FibosoSort(myFileable fileToSort,Comparator<Record> comparator){
 
         myFileable[] firstFiboTapes = createFiboTapesFromFile(fileToSort);
+        Tapes[initialBiggerFiboTapeIndex] = firstFiboTapes[0];
+        Tapes[initialSmallerFiboTapeIndex] = firstFiboTapes[1];
 
         //ammounts of dummy runs, on the bigger tape
         int NumOfDRuns = getDRunsInfo();
@@ -71,17 +72,13 @@ public class Sorting {
 
         while(IntStream.of(numbersOfRuns).sum() > 1){
             //merge tapes
-            //note that the bigger fibo tape will always be left with fibonacciable run amount
-            //TODO: what if so many runs on the mergedIinto tape get merged,
             //that it will end up with less runs than biggerFiboTape
-            mergeTapesFibo(biggerFiboTapeIndex,smallerFiboTapeIndex,emptyTapeIndex);
+            //mergeTapesFibo(biggerFiboTapeIndex,smallerFiboTapeIndex,emptyTapeIndex);
             //update tape designations
             int tmp = smallerFiboTapeIndex;
             smallerFiboTapeIndex = emptyTapeIndex;
             emptyTapeIndex = biggerFiboTapeIndex;
             biggerFiboTapeIndex = tmp;
-
-            //assignDummyRuns(dummyRunsInfo);
         }
 
         //we use this index because the last merge was into the empty tape
@@ -89,12 +86,79 @@ public class Sorting {
         return Tapes[smallerFiboTapeIndex];
     }
 
-    private void mergeTapesFibo(int indexFromBigger, int indexFromSmaller, int indexTo){
+    private void mergeTapesFibo(int indexFromBigger, int indexFromSmaller, int indexTo,int dummyRunsNumber){
+
+        mergeRecs recs = new mergeRecs();
+        // here recs.someRecs[x] x = 0 for bigger tape, x = 1 for smaller tape
+        recs.currRecs[0] = Tapes[indexFromBigger].getRecord();
+        recs.currRecs[1] = Tapes[indexFromSmaller].getRecord();
+
+        recs.lastRecs[0] = recs.currRecs[0];
+        recs.lastRecs[1] = recs.currRecs[1];
+
+        while(dummyRunsNumber > 0){
+            //if empty tape pops up here, sth went wrong earlier - too much dummy runs maybe
+            Tapes[indexTo].saveRecord(recs.currRecs[1]);
+            recs.topRecOnToTape = recs.currRecs[1];
+            recs.lastRecs[1] = recs.currRecs[1];
+            recs.currRecs[1] = Tapes[indexFromSmaller].getRecord();
+
+            if(correctOrder(recs.lastRecs[1], recs.currRecs[1])){
+                dummyRunsNumber -= 1;
+                numbersOfRuns[indexFromSmaller] -= 1;
+                numbersOfRuns[indexTo] += 1;
+            }
+        }
+
+        while(!Tapes[indexFromSmaller].isEmpty()){
+            mergeRunsFibo(recs,indexFromSmaller,indexFromBigger,indexTo);
+            numbersOfRuns[indexFromSmaller] -=1;
+            numbersOfRuns[indexFromBigger] -=1;
+            numbersOfRuns[indexTo] +=1;
+        }
+    }
+
+    //While(any of two runs has not ended)
+    //  if(r1 ended) put from r2
+    //  else if(r2 ended) put from r1
+    //  else compare and put the good one
+    private void mergeRunsFibo(mergeRecs lastsCurrsRecs, int smallTapeIdx, int bigTapeIdx, int tapeToIdx){
+
+        //0 is big tape 1 is small tape
+        lastsCurrsRecs.lastRecs[0] = lastsCurrsRecs.currRecs[0];
+        lastsCurrsRecs.lastRecs[1] = lastsCurrsRecs.currRecs[1];
+
+        while((!Tapes[bigTapeIdx].isEmpty() && correctOrder(lastsCurrsRecs.lastRecs[0],lastsCurrsRecs.currRecs[0])) ||
+                (!Tapes[smallTapeIdx].isEmpty() && correctOrder(lastsCurrsRecs.lastRecs[1],lastsCurrsRecs.currRecs[1])))
+        {
+            if(Tapes[bigTapeIdx].isEmpty() || !correctOrder(lastsCurrsRecs.lastRecs[0],lastsCurrsRecs.currRecs[0])){
+                Tapes[tapeToIdx].saveRecord(lastsCurrsRecs.currRecs[1]);
+                lastsCurrsRecs.lastRecs[1] = lastsCurrsRecs.currRecs[1];
+                lastsCurrsRecs.currRecs[1] = Tapes[smallTapeIdx].getRecord();
+            }
+            else if (Tapes[smallTapeIdx].isEmpty() || !correctOrder(lastsCurrsRecs.lastRecs[1],lastsCurrsRecs.currRecs[1])) {
+                Tapes[tapeToIdx].saveRecord(lastsCurrsRecs.currRecs[0]);
+                lastsCurrsRecs.lastRecs[0] = lastsCurrsRecs.currRecs[0];
+                lastsCurrsRecs.currRecs[0] = Tapes[bigTapeIdx].getRecord();
+            }
+            else{
+                if (correctOrder(lastsCurrsRecs.currRecs[0],lastsCurrsRecs.currRecs[1])){
+                    Tapes[tapeToIdx].saveRecord(lastsCurrsRecs.currRecs[0]);
+                    lastsCurrsRecs.lastRecs[0] = lastsCurrsRecs.currRecs[0];
+                    lastsCurrsRecs.currRecs[0] = Tapes[bigTapeIdx].getRecord();
+                }
+                else{
+                    Tapes[tapeToIdx].saveRecord(lastsCurrsRecs.currRecs[1]);
+                    lastsCurrsRecs.lastRecs[1] = lastsCurrsRecs.currRecs[1];
+                    lastsCurrsRecs.currRecs[1] = Tapes[smallTapeIdx].getRecord();
+                }
+            }
+        }
     }
 
     //We want to try make it so that the bigger tape can be adjusted to fibo proportions by adding dummy runs
-    //Put one run on both tapes
     //Chose a tape
+    //Put one run on both tapes
     //loop:
     //Get next fibo number - initial is 1
     //Put runs on the chosen tape till you reach the fibo number
@@ -137,7 +201,7 @@ public class Sorting {
 
             while(fiboTapeRunAmmounts[chosenTapeIndex] < fiboNumPair[1] && !fileToInsert.isEmpty()){
 
-                //this accounts for run fusion
+                //this "if" accounts for run fusion
                 if(!correctOrder(lastRecords[chosenTapeIndex],currentRecord)) fiboTapeRunAmmounts[chosenTapeIndex] +=1;
 
                 do{
@@ -185,6 +249,16 @@ public class Sorting {
 
     public int[] getNumsOfRuns(){
         return numbersOfRuns;
+    }
+
+    private class mergeRecs{
+        public Record[] lastRecs;
+        public Record[] currRecs;
+        public Record topRecOnToTape;
+        public mergeRecs(){
+            lastRecs = new Record[2];
+            currRecs = new Record[2];
+        }
     }
 
 }
