@@ -86,4 +86,9 @@ public class Record implements Comparable<Record>{
     public int compareTo(Record other) {
         return Float.compare(this.getField(),other.getField());
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(getField());
+    }
 }
