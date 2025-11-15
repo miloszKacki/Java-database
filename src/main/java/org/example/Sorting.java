@@ -13,7 +13,6 @@ public class Sorting {
     private static final int initialSmallerFiboTapeIndex = 1;
     private static final int initialEmptyFiboTapeIndex = 2;
     myFileable[] Tapes = new MockFile[numberOfTapes];
-    //TODO switch those two arraylists to suitable data structures
     int[] numbersOfRuns = new int[numberOfTapes];
 
     //records are supposed to be rising towards "input"
@@ -194,8 +193,7 @@ public class Sorting {
     //File we're currently working on is the bigger tape
     //Update tracked run amounts
     //Returns [biggerTape,smallerTape]
-    //TODO Unpublic this. Its public for testing.
-    public myFileable[] createFiboTapesFromFile(myFileable fileToInsert){
+    private myFileable[] createFiboTapesFromFile(myFileable fileToInsert){
 
         myFileable[] fiboTapes = {new MockFile(),new MockFile()};
         int[] fiboTapeRunAmmounts = {0,0};

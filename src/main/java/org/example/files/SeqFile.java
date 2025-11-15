@@ -1,18 +1,18 @@
 package org.example.files;
 
 import org.example.Record;
+import org.example.exceptions.FileBrokenException;
 import org.example.exceptions.FileEmptyException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
+import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class SeqFile implements myFileable{
 
     //1 record is 12bytes, 10 records for page (for now)
     private final static int pageSize = 120;
+    private final static int recordLength = 12;
 
     ArrayList<Record> inBuffer = new ArrayList<Record>();
     ArrayList<Record> outBuffer = new ArrayList<Record>();
@@ -21,30 +21,100 @@ public class SeqFile implements myFileable{
     FileOutputStream outStream;
 
     public SeqFile(String path) {
+        theFile = new File(path);
+        try {
+            if(!theFile.exists())
+                theFile.createNewFile();
 
+            inStream = new FileInputStream(theFile);
+            outStream = new FileOutputStream(theFile);
+        }
+        catch(FileNotFoundException e) {
+            System.err.println("FNF error: " + e);
+        }
+        catch(IOException e) {
+            System.err.println("(opening)IO error: " + e);
+        }
     }
 
     public void close(){
         //TODO yea
+
+        try {
+            inStream.close();
+            outStream.close();
+        }
+
+        catch(IOException e) {
+            System.err.println("(closing)IO error: " + e);
+        }
     }
 
     @Override
     public Record getRecord() throws FileEmptyException {
-        if(!outBuffer.isEmpty()){
+        //TODO
+        if (!outBuffer.isEmpty()){
             return outBuffer.removeFirst();
+        }
+        else if (theFile.length() > 0){
+
+            byte[] pageBytes = new byte[pageSize];
+            ByteBuffer tmpRecBuffer = ByteBuffer.allocate(recordLength);
+
+            try{
+                if(inStream.read(pageBytes) == -1) throw new FileBrokenException();
+                tmpRecBuffer.put(pageBytes);
+            }
+            catch(IOException e) {
+                System.err.println("(reading)IO error: " + e);
+            }
+
+            Record tmpRec;
+            for (int i=0;i<pageSize/recordLength;i++){
+                tmpRec = new Record(
+                        tmpRecBuffer.getFloat(),
+                        tmpRecBuffer.getFloat(),
+                        tmpRecBuffer.getFloat()
+                );
+                outBuffer.add(tmpRec);
+                //outBuffer.add(tmpRec.copy()); TODO check if this .copy() thing is needed here
+            }
+
+        }
+        else if(!inBuffer.isEmpty()){
+            return inBuffer.removeFirst();
         }
         throw new FileEmptyException();
     }
 
     @Override
     public void saveRecord(Record record) {
-        if(inBuffer.size() < pageSize/12){
-            inBuffer.add(record);
+        //TODO test this
+        inBuffer.add(record);
+        if(inBuffer.size() <= pageSize/recordLength){
+
+            byte[] byteRecs = new byte[pageSize];
+            ByteBuffer tmpRecBuffer = ByteBuffer.allocate(recordLength);
+            Record tmpRec;
+
+            for(int i=0;i<pageSize/recordLength;i++){
+                tmpRec = inBuffer.removeFirst();
+                tmpRecBuffer.putFloat(tmpRec.getA());
+                tmpRecBuffer.putFloat(tmpRec.getB());
+                tmpRecBuffer.putFloat(tmpRec.getAngle());
+                System.arraycopy(tmpRecBuffer.array(),0,byteRecs,i*recordLength,recordLength);
+            }
+            try {
+               outStream.write(byteRecs);
+            }
+            catch(IOException e) {
+                System.err.println("(writing)IO error: " + e);
+            }
         }
     }
 
     @Override
     public boolean isEmpty(){
-        return (inBuffer.isEmpty() && outBuffer.isEmpty());
+        return (inBuffer.isEmpty() && outBuffer.isEmpty() && theFile.length() == 0);
     }
 }

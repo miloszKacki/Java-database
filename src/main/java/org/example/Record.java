@@ -92,6 +92,9 @@ public class Record implements Comparable<Record>{
         return String.valueOf(getField());
     }
 
+    public Record copy(){
+        return new Record(getA(),getB(),getAngle());
+    }
     /*public byte[] toByte(){
 
     }*/
