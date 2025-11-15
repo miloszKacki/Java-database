@@ -3,6 +3,10 @@ package org.example.files;
 import org.example.Record;
 import org.example.exceptions.FileEmptyException;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 
 public class SeqFile implements myFileable{
@@ -12,9 +16,16 @@ public class SeqFile implements myFileable{
 
     ArrayList<Record> inBuffer = new ArrayList<Record>();
     ArrayList<Record> outBuffer = new ArrayList<Record>();
+    File theFile;
+    FileInputStream inStream;
+    FileOutputStream outStream;
 
-    public SeqFile(String path){
+    public SeqFile(String path) {
 
+    }
+
+    public void close(){
+        //TODO yea
     }
 
     @Override

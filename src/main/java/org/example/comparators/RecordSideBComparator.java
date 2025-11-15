@@ -7,6 +7,6 @@ import java.util.Comparator;
 public class RecordSideBComparator implements Comparator<Record> {
     @Override
     public int compare(Record a,Record b){
-        return Integer.compare(a.getB(),b.getB());
+        return Float.compare(a.getB(),b.getB());
     }
 }

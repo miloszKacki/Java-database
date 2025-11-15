@@ -13,29 +13,29 @@ public class Record implements Comparable<Record>{
     //       /                   /
     //      /___________________/    :3
 
-
+    static final float maxRandomSideValue = 1000_000f;
 
     //side lengths
-    private int a;
-    private int b;
+    private float a;
+    private float b;
 
     //angle in radians
     private float angle;
 
-    public Record(int a, int b, float angle){
+    public Record(float a, float b, float angle){
         setA(a);
         setB(b);
         setAngle(angle);
     }
 
     //setters
-    public void setA(int a) {
+    public void setA(float a) {
         if (a > 0) this.a = a;
         else
             throw new InvalidRecordParameterException();
     }
 
-    public void setB(int b) {
+    public void setB(float b) {
         if (b > 0) this.b = b;
         else
             throw new InvalidRecordParameterException();
@@ -48,10 +48,10 @@ public class Record implements Comparable<Record>{
     }
 
     //getters
-    public int getA(){
+    public float getA(){
         return this.a;
     }
-    public int getB(){
+    public float getB(){
         return this.b;
     }
     public float getAngle(){
@@ -66,14 +66,14 @@ public class Record implements Comparable<Record>{
 
         Random random = new Random();
 
-        int a;
-        int b;
+        float a;
+        float b;
         float angle;
 
         for(int i=0;i<numOfRandRecords;i++){
 
-            a = Math.abs(random.nextInt());
-            b = Math.abs(random.nextInt());
+            a = random.nextFloat()*maxRandomSideValue;
+            b = random.nextFloat()*maxRandomSideValue;
             //min + rand*(max-min)
             angle = 0 + random.nextFloat()*((float)(Math.PI/2));
 
@@ -91,4 +91,8 @@ public class Record implements Comparable<Record>{
     public String toString() {
         return String.valueOf(getField());
     }
+
+    /*public byte[] toByte(){
+
+    }*/
 }
