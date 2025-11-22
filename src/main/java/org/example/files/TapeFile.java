@@ -48,28 +48,6 @@ public class TapeFile implements myFileable{
 
     }
 
-    //Resets this TapeFile object and opens the file at specified pathname
-    public void openFile(String path){
-        File newFile = new File(path);
-        if (newFile.exists()){
-            theFile.delete();
-            theFile = newFile;
-            fileReadingIdx = 0;
-            fileBuffer = new ArrayList<Record>();
-            inWritingMode = true;
-
-            try {
-                //note we dont create inStream in the constructor
-                if(inStream != null)inStream.close();
-                outStream.close();
-                outStream = new FileOutputStream(theFile);
-            }
-            catch (IOException e){
-                System.err.println("IO error: " + e);
-            }
-        }
-    }
-
     @Override
     public Record getRecord() throws FileEmptyException {
 
