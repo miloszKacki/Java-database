@@ -44,7 +44,6 @@ public class SeqFile implements myFileable{
             inStream.close();
             outStream.close();
         }
-
         catch(IOException e) {
             System.err.println("(closing)IO error: " + e);
         }
@@ -52,34 +51,36 @@ public class SeqFile implements myFileable{
 
     @Override
     public Record getRecord() throws FileEmptyException {
-        //TODO
+        //TODO file.length() works differently than I thought. Gotta check whats up.
         if (!outBuffer.isEmpty()){
             return outBuffer.removeFirst();
         }
-        else if (theFile.length() > 0){
+        else if (theFile.length() >= pageSize){
 
             byte[] pageBytes = new byte[pageSize];
-            ByteBuffer tmpRecBuffer = ByteBuffer.allocate(recordLength);
+            ByteBuffer recBuffer = ByteBuffer.allocate(pageSize);
 
             try{
                 if(inStream.read(pageBytes) == -1) throw new FileBrokenException();
-                tmpRecBuffer.put(pageBytes);
+                recBuffer.put(pageBytes);
             }
             catch(IOException e) {
                 System.err.println("(reading)IO error: " + e);
             }
 
+            recBuffer.flip();
+
             Record tmpRec;
             for (int i=0;i<pageSize/recordLength;i++){
                 tmpRec = new Record(
-                        tmpRecBuffer.getFloat(),
-                        tmpRecBuffer.getFloat(),
-                        tmpRecBuffer.getFloat()
+                        recBuffer.getFloat(),
+                        recBuffer.getFloat(),
+                        recBuffer.getFloat()
                 );
                 outBuffer.add(tmpRec);
                 //outBuffer.add(tmpRec.copy()); TODO check if this .copy() thing is needed here
             }
-
+            return outBuffer.removeFirst();
         }
         else if(!inBuffer.isEmpty()){
             return inBuffer.removeFirst();
@@ -91,21 +92,22 @@ public class SeqFile implements myFileable{
     public void saveRecord(Record record) {
         //TODO test this
         inBuffer.add(record);
-        if(inBuffer.size() <= pageSize/recordLength){
+        if(inBuffer.size() >= pageSize/recordLength){
 
-            byte[] byteRecs = new byte[pageSize];
-            ByteBuffer tmpRecBuffer = ByteBuffer.allocate(recordLength);
+            ByteBuffer recBuffer = ByteBuffer.allocate(pageSize);
             Record tmpRec;
 
             for(int i=0;i<pageSize/recordLength;i++){
                 tmpRec = inBuffer.removeFirst();
-                tmpRecBuffer.putFloat(tmpRec.getA());
-                tmpRecBuffer.putFloat(tmpRec.getB());
-                tmpRecBuffer.putFloat(tmpRec.getAngle());
-                System.arraycopy(tmpRecBuffer.array(),0,byteRecs,i*recordLength,recordLength);
+                recBuffer.putFloat(tmpRec.getA());
+                recBuffer.putFloat(tmpRec.getB());
+                recBuffer.putFloat(tmpRec.getAngle());
             }
+
+            byte[] bytePage = recBuffer.array();
+
             try {
-               outStream.write(byteRecs);
+               outStream.write(bytePage);
             }
             catch(IOException e) {
                 System.err.println("(writing)IO error: " + e);

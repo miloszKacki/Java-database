@@ -2,54 +2,53 @@ package org.example;
 
 
 import org.example.files.MockFile;
+import org.example.files.SeqFile;
+import org.example.files.TapeFile;
 import org.example.files.myFileable;
 
 public class Main {
     public static void main(String[] args) {
 
-        MockFile test = new MockFile();
+        TapeFile test = new TapeFile("test.bin");
 
-        int numberOfTestRecords = 2478;
+        int numberOfTestRecords = 4621;
         Record[] testRecords = Record.getRandomRecords(numberOfTestRecords);
-        for (Record rec : testRecords){
-            System.out.println(rec.getA() + ", " + rec.getB() + ", " + rec.getAngle());
-        }
-/*
+
+        /*
         Record[] testRecords = {
-                new Record(1615876894, 1908695397, 0.73914415f),
-                new Record(1885438856, 183966590, 0.68063563f),
-                new Record(192108441, 1773683771, 0.2615689f),
-                new Record(1588695872, 1824866896, 1.4616414f),
-                new Record(836731289, 1475561654, 1.0700437f),
-                new Record(141620799, 1535947480, 0.32005998f),
-                new Record(143851786, 657174947, 1.017207f),
-                new Record(737181308, 1246399382, 1.4527184f),
-                new Record(1197091121, 630255331, 1.10315f),
-                new Record(798013048, 708989719, 1.3520416f),
-                new Record(1876630992, 2095981970, 1.1997545f),
-                new Record(711212474, 309525881, 0.55677605f),
-                new Record(2141206135, 2069958471, 0.3264369f),
-                new Record(1538144299, 42300300, 0.5835461f),
-                new Record(473793221, 1807366013, 0.41588587f),
-                new Record(1790338795, 5742948, 1.1871688f),
-                new Record(177171567, 1577930604, 0.4028327f),
-                new Record(455044298, 594904542, 1.3604095f),
-                new Record(2122268546, 1126752139, 1.1820328f),
-                new Record(167611109, 1789251416, 0.5901317f)
-        };
-*/
-        for(int i=0;i<numberOfTestRecords;i++){
-            test.saveRecord(testRecords[i]);
+                new Record(865694.3f, 136356.77f, 0.11628471f),
+                new Record(740440.25f, 761734.0f, 0.91862684f),
+                new Record(492699.16f, 677292.44f, 0.23536757f)
+        };*/
+
+        /*
+        Record[] testRecords = {
+                new Record(678597.7f, 604920.25f, 0.7564926f),
+                new Record(536905.8f, 288768.06f, 0.32110205f),
+                new Record(536714.5f, 687137.6f, 0.33067903f),
+                new Record(632479.5f, 33195.496f, 0.4236811f),
+                new Record(854989.7f, 825001.94f, 9.568655E-4f),
+                new Record(369056.47f, 329593.9f, 1.3774606f),
+                new Record(281048.78f, 500088.8f, 0.022039272f),
+                new Record(614713.94f, 474476.56f, 0.92315125f),
+                new Record(828702.9f, 718409.7f, 1.0321467f),
+                new Record(975394.3f, 937983.2f, 0.8560452f)
+        };*/
+
+        for(Record each : testRecords){
+            test.saveRecord(each);
+            System.out.println(each.getA()+"f, "+each.getB()+"f, "+ each.getAngle()+"f");
         }
 
-        System.out.println(test);
+        //((TapeFile)test).printToConsole();
+
         Sorting testSort = new Sorting(false);
 
-        myFileable a = testSort.FibosoSort(test);
+        TapeFile a = (TapeFile)testSort.FibosoSort(test);
 
-        System.out.println(a);
+        a.printToConsole();
+
     }
-
 
 
 }

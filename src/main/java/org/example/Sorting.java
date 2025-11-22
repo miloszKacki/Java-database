@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.files.MockFile;
+import org.example.files.TapeFile;
 import org.example.files.myFileable;
 
 import java.util.Comparator;
@@ -12,8 +13,10 @@ public class Sorting {
     private static final int initialBiggerFiboTapeIndex = 0;
     private static final int initialSmallerFiboTapeIndex = 1;
     private static final int initialEmptyFiboTapeIndex = 2;
-    myFileable[] Tapes = new MockFile[numberOfTapes];
+    private static final String tapeFilesLocation = "sortTapes";
+    myFileable[] Tapes = new TapeFile[numberOfTapes];
     int[] numbersOfRuns = new int[numberOfTapes];
+
 
     //records are supposed to be rising towards "input"
     //r1=get; r2=get; r1.compare(r2) >= 0 is desired order
@@ -23,7 +26,6 @@ public class Sorting {
 
     public Sorting(boolean descendingOrder){
         this.descendingOrder = descendingOrder;
-
     }
     public void setOrder(boolean isInDescendingOrder){
         this.descendingOrder = isInDescendingOrder;
@@ -61,7 +63,7 @@ public class Sorting {
         myFileable[] firstFiboTapes = createFiboTapesFromFile(fileToSort);
         Tapes[initialBiggerFiboTapeIndex] = firstFiboTapes[0];
         Tapes[initialSmallerFiboTapeIndex] = firstFiboTapes[1];
-        Tapes[initialEmptyFiboTapeIndex] = new MockFile(); //TODO change to an actual file
+        Tapes[initialEmptyFiboTapeIndex] = new TapeFile(tapeFilesLocation +"//tapeC.bin");
 
         //ammounts of dummy runs, on the bigger tape
         int numOfDRuns = getDrunNum();
@@ -88,7 +90,7 @@ public class Sorting {
         }
 
         //we use this index because the last merge was into the empty tape
-        // witch's index got written into smallerFiboTapeIndex during last loop iteration
+        // which's index got written into smallerFiboTapeIndex during last loop iteration
         return Tapes[biggerFiboTapeIndex];
     }
 
@@ -195,7 +197,7 @@ public class Sorting {
     //Returns [biggerTape,smallerTape]
     private myFileable[] createFiboTapesFromFile(myFileable fileToInsert){
 
-        myFileable[] fiboTapes = {new MockFile(),new MockFile()};
+        myFileable[] fiboTapes = {new TapeFile(tapeFilesLocation +"//tapeA.bin"),new TapeFile(tapeFilesLocation +"//tapeB.bin")};
         int[] fiboTapeRunAmmounts = {0,0};
         Record[] lastRecords = new Record[2];
         Record currentRecord;
@@ -258,7 +260,8 @@ public class Sorting {
             fiboPair = increaseFiboPair(fiboPair);
         }
 
-        if(numbersOfRuns[initialBiggerFiboTapeIndex] <= numbersOfRuns[initialSmallerFiboTapeIndex])
+        if(numbersOfRuns[initialBiggerFiboTapeIndex] <= numbersOfRuns[initialSmallerFiboTapeIndex]
+        && numbersOfRuns[initialBiggerFiboTapeIndex] > 1)
             fiboPair = increaseFiboPair(fiboPair);
 
         return fiboPair[1]-numbersOfRuns[initialBiggerFiboTapeIndex];
