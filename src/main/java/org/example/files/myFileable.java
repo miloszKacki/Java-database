@@ -7,4 +7,5 @@ public interface myFileable {
     public Record getRecord() throws FileEmptyException;
     public void saveRecord(Record record);
     public boolean isEmpty();
+    public void printToConsole();
 }

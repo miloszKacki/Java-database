@@ -22,6 +22,8 @@ public class TapeFile implements myFileable{
     FileInputStream inStream;
     FileOutputStream outStream;
 
+    //Doesnt open a file at path, but deletes it.
+    //For opening new Files openFile should be used
     public TapeFile(String path) {
         theFile = new File(path);
         try {
@@ -38,12 +40,34 @@ public class TapeFile implements myFileable{
             System.err.println("FNF error: " + e);
         }
         catch(IOException e) {
-            System.err.println("(opening)IO error: " + e);
+            System.err.println("IO error: " + e);
         }
 
         fileBuffer = new ArrayList<Record>();
         fileReadingIdx = 0;
 
+    }
+
+    //Resets this TapeFile object and opens the file at specified pathname
+    public void openFile(String path){
+        File newFile = new File(path);
+        if (newFile.exists()){
+            theFile.delete();
+            theFile = newFile;
+            fileReadingIdx = 0;
+            fileBuffer = new ArrayList<Record>();
+            inWritingMode = true;
+
+            try {
+                //note we dont create inStream in the constructor
+                if(inStream != null)inStream.close();
+                outStream.close();
+                outStream = new FileOutputStream(theFile);
+            }
+            catch (IOException e){
+                System.err.println("IO error: " + e);
+            }
+        }
     }
 
     @Override
@@ -75,7 +99,7 @@ public class TapeFile implements myFileable{
                 fileReadingIdx += readlength;
             }
             catch(IOException e) {
-                System.err.println("(reading)IO error: " + e);
+                System.err.println("IO error: " + e);
             }
 
             recBuffer.flip();
@@ -122,7 +146,7 @@ public class TapeFile implements myFileable{
                 outStream.write(bytePage);
             }
             catch(IOException e) {
-                System.err.println("(writing)IO error: " + e);
+                System.err.println("IO error: " + e);
             }
         }
     }
@@ -139,7 +163,7 @@ public class TapeFile implements myFileable{
             outStream = new FileOutputStream(theFile);
         }
         catch(IOException e){
-            System.err.println("(switching to writing mode)IO error: " + e);
+            System.err.println("IO error: " + e);
         }
         inWritingMode = true;
     }
@@ -165,7 +189,7 @@ public class TapeFile implements myFileable{
             inStream = new FileInputStream(theFile);
         }
         catch(IOException e) {
-            System.err.println("(switching to reading mode)IO error: " + e);
+            System.err.println("IO error: " + e);
         }
 
         fileReadingIdx = 0;

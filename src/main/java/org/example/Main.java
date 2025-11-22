@@ -1,10 +1,7 @@
 package org.example;
 
 
-import org.example.files.MockFile;
-import org.example.files.SeqFile;
 import org.example.files.TapeFile;
-import org.example.files.myFileable;
 
 public class Main {
     public static void main(String[] args) {
@@ -40,7 +37,7 @@ public class Main {
             System.out.println(each.getA()+"f, "+each.getB()+"f, "+ each.getAngle()+"f");
         }
 
-        //((TapeFile)test).printToConsole();
+        test.openFile("C:\\Users\\milos\\IdeaProjects\\SBD_projekt\\inputTapes\\inTape.bin");
 
         Sorting testSort = new Sorting(false);
 
@@ -49,6 +46,7 @@ public class Main {
         a.printToConsole();
 
     }
+    //"C:\\Users\\milos\\IdeaProjects\\SBD_projekt\\inputTapes\\inTape.bin"
 
 
 }

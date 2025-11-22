@@ -32,6 +32,11 @@ public class MockFile implements myFileable{
     }
 
     @Override
+    public void printToConsole() {
+        System.out.println(this.toString());
+    }
+
+    @Override
     public String toString(){
         String s = new String("Mock: ");
         for (int i=0;i < recordlist.size();i++){
