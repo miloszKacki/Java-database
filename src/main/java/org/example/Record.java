@@ -3,6 +3,7 @@ package org.example;
 import org.example.exceptions.InvalidRecordParameterException;
 
 import java.util.Random;
+import java.util.Scanner;
 
 public class Record implements Comparable<Record>{
 
@@ -95,7 +96,17 @@ public class Record implements Comparable<Record>{
     public Record copy(){
         return new Record(getA(),getB(),getAngle());
     }
-    /*public byte[] toByte(){
 
-    }*/
+    public static Record getRecordFromConsole(){
+        float a,b,angle;
+        Scanner recScanner = new Scanner(System.in);
+        System.out.println("Reading a record from console.\nPlease adhere to this format: \"float float float\"(a b angle)");
+
+        a = recScanner.nextFloat();
+        b = recScanner.nextFloat();
+        angle = recScanner.nextFloat();
+
+        return new Record(a,b,angle);
+    }
+
 }

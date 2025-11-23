@@ -3,50 +3,50 @@ package org.example;
 
 import org.example.files.TapeFile;
 
+//TODO sprawko
+
 public class Main {
     public static void main(String[] args) {
 
-        TapeFile test = new TapeFile("test.bin");
+        ConsoleInputHandler c = new ConsoleInputHandler(args);
+        FiboSort sorting = new FiboSort(c.options);
+        TapeFile tmp = new TapeFile("sortTapes\\tmpTestFile.bin");
+        //MockFile tmp = new MockFile();
 
-        int numberOfTestRecords = 4621;
-        Record[] testRecords = Record.getRandomRecords(numberOfTestRecords);
+        if(c.options.modeOfOperation == SortOptions.Mode.Random){
 
-        /*
-        Record[] testRecords = {
-                new Record(865694.3f, 136356.77f, 0.11628471f),
-                new Record(740440.25f, 761734.0f, 0.91862684f),
-                new Record(492699.16f, 677292.44f, 0.23536757f)
-        };*/
+            Record[] testRecords = Record.getRandomRecords(c.options.randRecNum);
+            for(Record each : testRecords) tmp.saveRecord(each);
 
-        /*
-        Record[] testRecords = {
-                new Record(678597.7f, 604920.25f, 0.7564926f),
-                new Record(536905.8f, 288768.06f, 0.32110205f),
-                new Record(536714.5f, 687137.6f, 0.33067903f),
-                new Record(632479.5f, 33195.496f, 0.4236811f),
-                new Record(854989.7f, 825001.94f, 9.568655E-4f),
-                new Record(369056.47f, 329593.9f, 1.3774606f),
-                new Record(281048.78f, 500088.8f, 0.022039272f),
-                new Record(614713.94f, 474476.56f, 0.92315125f),
-                new Record(828702.9f, 718409.7f, 1.0321467f),
-                new Record(975394.3f, 937983.2f, 0.8560452f)
-        };*/
-
-        for(Record each : testRecords){
-            test.saveRecord(each);
-            System.out.println(each.getA()+"f, "+each.getB()+"f, "+ each.getAngle()+"f");
+        }
+        else if(c.options.modeOfOperation == SortOptions.Mode.Keyboard){
+            for(int i=0;i<c.options.keyRecNum;i++){
+                tmp.saveRecord(Record.getRecordFromConsole());
+            }
+            System.out.println("Successfully read records from console!");
+        }
+        else if(c.options.modeOfOperation == SortOptions.Mode.File){
+            tmp = TapeFile.readFromTapeFile("sortTapes\\tmpTestFile.bin",c.options.inFilePath);
+        }
+        else {
+            System.out.println("Ooops! Unsupported mode of operation. Check the argument \"ModeOfOperation\" for typos :3");
+            System.out.println("Or ConsoleInputHandler class for bugs... <_<'");
+            return;
         }
 
-        test.openFile("C:\\Users\\milos\\IdeaProjects\\SBD_projekt\\inputTapes\\inTape.bin");
+        if(c.options.saveInput)TapeFile.saveTapeFileToElsewhere(c.options.inFilePath,tmp);
 
-        Sorting testSort = new Sorting(false);
+        TapeFile.pageSaveCount = 0;
+        TapeFile.saveCount = 0;
 
-        TapeFile a = (TapeFile)testSort.FibosoSort(test);
+        TapeFile outputFile = (TapeFile)sorting.FibosoSort(tmp);
+        TapeFile.saveTapeFileToElsewhere(c.options.outFilePath,outputFile);
 
-        a.printToConsole();
+        if(c.options.printDReadNum) System.out.println("Disc read operation number: "+TapeFile.pageReadCount);
+        if(c.options.printDSaveNum) System.out.println("Disc save operation number: "+TapeFile.pageSaveCount);
+        if(c.options.printFReadNum) System.out.println("Read record operation number: "+TapeFile.readCount);
+        if(c.options.printFSaveNum) System.out.println("Save record operation number: "+TapeFile.saveCount);
 
     }
     //"C:\\Users\\milos\\IdeaProjects\\SBD_projekt\\inputTapes\\inTape.bin"
-
-
 }

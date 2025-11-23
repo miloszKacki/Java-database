@@ -7,28 +7,23 @@ import org.example.files.myFileable;
 import java.util.Comparator;
 import java.util.stream.IntStream;
 
-public class Sorting {
+public class FiboSort {
     private static final int numberOfTapes = 3;
     private static final int initialFileTapeIndex = 2;
     private static final int initialBiggerFiboTapeIndex = 0;
     private static final int initialSmallerFiboTapeIndex = 1;
     private static final int initialEmptyFiboTapeIndex = 2;
-    private static final String tapeFilesLocation = "sortTapes";
+    public int numberOfPhases;
+    private final SortOptions options;
     myFileable[] Tapes = new TapeFile[numberOfTapes];
+    //myFileable[] Tapes = new MockFile[numberOfTapes];
     int[] numbersOfRuns = new int[numberOfTapes];
 
-
-    //records are supposed to be rising towards "input"
-    //r1=get; r2=get; r1.compare(r2) >= 0 is desired order
-    //Likewise, when r1.compare(r2) = 1 r1 goes in first
     Comparator<Record> comparator;
     boolean descendingOrder;
 
-    public Sorting(boolean descendingOrder){
-        this.descendingOrder = descendingOrder;
-    }
-    public void setOrder(boolean isInDescendingOrder){
-        this.descendingOrder = isInDescendingOrder;
+    public FiboSort(SortOptions options){
+        this.options = options;
     }
     private void emptyTape(int tapeNumber){
         while (Tapes[tapeNumber].isEmpty()){
@@ -37,33 +32,16 @@ public class Sorting {
         numbersOfRuns[tapeNumber] =0;
     }
 
-    //Prolly shouldn't be used (!)
-    private void insertFileIntoTape(myFileable fileToInsert,int tapeNumber){
-        emptyTape(tapeNumber);
-        if(fileToInsert.isEmpty()) return;
-
-        Record record,lastRecord;
-
-        record = fileToInsert.getRecord();
-        Tapes[tapeNumber].saveRecord(record);
-        numbersOfRuns[tapeNumber] +=1;
-
-        while (!fileToInsert.isEmpty()){
-            lastRecord = record;
-            record = fileToInsert.getRecord();
-            Tapes[tapeNumber].saveRecord(record);
-
-            if(comparator.compare(lastRecord,record) > 0)
-                numbersOfRuns[tapeNumber] +=1;
-        }
-    }
-
     public myFileable FibosoSort(myFileable fileToSort){
+
+        if (options.printBeforeSort) fileToSort.printToConsole();
+        numberOfPhases = 0;
 
         myFileable[] firstFiboTapes = createFiboTapesFromFile(fileToSort);
         Tapes[initialBiggerFiboTapeIndex] = firstFiboTapes[0];
         Tapes[initialSmallerFiboTapeIndex] = firstFiboTapes[1];
-        Tapes[initialEmptyFiboTapeIndex] = new TapeFile(tapeFilesLocation +"//tapeC.bin");
+        Tapes[initialEmptyFiboTapeIndex] = new TapeFile(options.tapesPath +"//tapeC.bin");
+        //Tapes[initialEmptyFiboTapeIndex] = new MockFile();
 
         //ammounts of dummy runs, on the bigger tape
         int numOfDRuns = getDrunNum();
@@ -78,8 +56,11 @@ public class Sorting {
         mergeRecs recs = new mergeRecs();
 
         while(IntStream.of(numbersOfRuns).sum() > 1){
+            numberOfPhases += 1;
+            if(options.printEachPhase)
+                printTapes(biggerFiboTapeIndex,smallerFiboTapeIndex,emptyTapeIndex);
+
             //merge tapes
-            //that it will end up with less runs than biggerFiboTape
             mergeTapesFibo(biggerFiboTapeIndex,smallerFiboTapeIndex,emptyTapeIndex,numOfDRuns,recs);
             numOfDRuns = 0;
             //update tape designations
@@ -88,6 +69,13 @@ public class Sorting {
             smallerFiboTapeIndex = biggerFiboTapeIndex;
             biggerFiboTapeIndex = tmp;
         }
+
+        if(options.printAfterSort) {
+            System.out.println("Sorting result:");
+            Tapes[biggerFiboTapeIndex].printToConsole();
+        }
+        if(options.printPhaseNum)
+            System.out.println("Sorted in " + numberOfPhases + " phases");
 
         //we use this index because the last merge was into the empty tape
         // which's index got written into smallerFiboTapeIndex during last loop iteration
@@ -197,7 +185,8 @@ public class Sorting {
     //Returns [biggerTape,smallerTape]
     private myFileable[] createFiboTapesFromFile(myFileable fileToInsert){
 
-        myFileable[] fiboTapes = {new TapeFile(tapeFilesLocation +"//tapeA.bin"),new TapeFile(tapeFilesLocation +"//tapeB.bin")};
+        myFileable[] fiboTapes = {new TapeFile(options.tapesPath +"//tapeA.bin"),new TapeFile(options.tapesPath +"//tapeB.bin")};
+        //myFileable[] fiboTapes = {new MockFile(),new MockFile()};
         int[] fiboTapeRunAmmounts = {0,0};
         Record[] lastRecords = new Record[2];
         Record currentRecord;
@@ -245,6 +234,13 @@ public class Sorting {
             fiboTapeRunAmmounts[chosenTapeIndex] +=1;
         fiboTapes[chosenTapeIndex].saveRecord(currentRecord);
 
+        //Edge case: chosen = fibo[0] the other = fibo[1]. Can happen due to one too many "chosenTapeIdx" switches in the while loop
+        fiboNumPair = new int[] {1,1};
+        while(fiboTapeRunAmmounts[chosenTapeIndex] > fiboNumPair[0] && fiboTapeRunAmmounts[(chosenTapeIndex+1)%2] > fiboNumPair[1]) {
+            fiboNumPair = increaseFiboPair(fiboNumPair);
+            if (fiboTapeRunAmmounts[(chosenTapeIndex + 1) % 2] == fiboNumPair[1] && fiboTapeRunAmmounts[chosenTapeIndex] == fiboNumPair[0])
+                chosenTapeIndex = (chosenTapeIndex+1)%2;
+        }
 
         myFileable[] retArray = {fiboTapes[chosenTapeIndex],fiboTapes[(chosenTapeIndex+1)%2]};
         numbersOfRuns[initialBiggerFiboTapeIndex] = fiboTapeRunAmmounts[chosenTapeIndex];
@@ -256,26 +252,36 @@ public class Sorting {
     private int getDrunNum(){
         int[] fiboPair = {1,1};
 
-        while(numbersOfRuns[initialBiggerFiboTapeIndex] > fiboPair[1]){
+        if(numbersOfRuns[initialBiggerFiboTapeIndex] <= 1 && numbersOfRuns[initialSmallerFiboTapeIndex] <= 1)
+            return 0;
+
+        while(!(numbersOfRuns[initialSmallerFiboTapeIndex] == fiboPair[0])){
             fiboPair = increaseFiboPair(fiboPair);
         }
-
-        if(numbersOfRuns[initialBiggerFiboTapeIndex] <= numbersOfRuns[initialSmallerFiboTapeIndex]
-        && numbersOfRuns[initialBiggerFiboTapeIndex] > 1)
-            fiboPair = increaseFiboPair(fiboPair);
 
         return fiboPair[1]-numbersOfRuns[initialBiggerFiboTapeIndex];
     }
     //CorrectOrder of inserting into file
-    private boolean correctOrder(Record firstOnTape,Record secondOnTape) {
-        return (secondOnTape.compareTo(firstOnTape) >= 0) ^ descendingOrder;
-    }
 
     private int[] increaseFiboPair(int[] fiboPair){
         int next = fiboPair[0] + fiboPair[1];
         fiboPair[0] = fiboPair[1];
         fiboPair[1] = next;
         return fiboPair;
+    }
+
+    private boolean correctOrder(Record firstOnTape,Record secondOnTape) {
+        return (secondOnTape.compareTo(firstOnTape) >= 0) ^ (!options.ifAsc);
+    }
+
+    private void printTapes(int bigTapeIdx, int smallTapeIdx, int emptyTapeIdx){
+        System.out.println("________________ Phase "+numberOfPhases+" ________________");
+        System.out.println("Big fibo tape:");
+        Tapes[bigTapeIdx].printToConsole();
+        System.out.println("Small fibo tape:");
+        Tapes[smallTapeIdx].printToConsole();
+        System.out.println("Empty fibo tape:");
+        Tapes[emptyTapeIdx].printToConsole();
     }
 
     public int[] getNumsOfRuns(){

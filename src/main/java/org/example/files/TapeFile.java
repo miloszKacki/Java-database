@@ -14,7 +14,13 @@ public class TapeFile implements myFileable{
     private final static int pageSize = 120;
     private final static int recordLength = 12;
 
-    File theFile;
+    public static int
+            readCount =0,
+            saveCount =0,
+            pageReadCount =0,
+            pageSaveCount =0;
+
+    private File theFile;
 
     ArrayList<Record> fileBuffer;
     int fileReadingIdx;
@@ -51,6 +57,8 @@ public class TapeFile implements myFileable{
     @Override
     public Record getRecord() throws FileEmptyException {
 
+        readCount +=1;
+
         if(inWritingMode)
             switchToReadingMode();
 
@@ -59,6 +67,8 @@ public class TapeFile implements myFileable{
             return fileBuffer.removeFirst();
         }
         else if (theFile.length() > fileReadingIdx){
+
+            pageReadCount += 1;
 
             int readlength = pageSize;
 
@@ -90,7 +100,6 @@ public class TapeFile implements myFileable{
                         recBuffer.getFloat()
                 );
                 fileBuffer.add(tmpRec);
-                //outBuffer.add(tmpRec.copy()); TODO check if this .copy() thing is needed here
             }
             return fileBuffer.removeFirst();
         }
@@ -100,13 +109,17 @@ public class TapeFile implements myFileable{
 
     @Override
     public void saveRecord(Record record) {
-        //TODO test this
+
+        saveCount += 1;
+
         if(!inWritingMode)
             switchToWritingMode();
 
         fileBuffer.add(record);
 
         if(fileBuffer.size() >= pageSize/recordLength){
+
+            pageSaveCount += 1;
 
             ByteBuffer recBuffer = ByteBuffer.allocate(pageSize);
             Record tmpRec;
@@ -188,13 +201,17 @@ public class TapeFile implements myFileable{
         return "Tape file :"+ theFile.getPath();
     }
 
-    //prints all the records from This to console
+    @Override
     public void printToConsole(){
 
         System.out.println("________ Printing " + theFile.getPath() + " to console. ________");
 
         try {
             FileInputStream printStream = new FileInputStream(theFile);
+            if(!inWritingMode && fileReadingIdx >0){
+                byte[] alreadyRead = new byte[fileReadingIdx];
+                printStream.read(alreadyRead);
+            }
 
             long recIdx = 0;
             Record pRec = new Record(1f,1f,1f);
@@ -237,6 +254,7 @@ public class TapeFile implements myFileable{
 
     }
 
+    //longs instead of ints, because of where its used
     private long printBuffer(long currentIdx){
         for (Record each : fileBuffer){
             printRecordFancy(each,currentIdx);
@@ -245,15 +263,118 @@ public class TapeFile implements myFileable{
         return currentIdx;
     }
 
+    private static final String numberPrintFormat = "%.5g";
     private void printRecordFancy(Record rec, long idx){
-        String numberFormat = "%.5g";
         System.out.println("Record number: "+idx+
-                " A: "+ String.format(numberFormat,rec.getA())+
-                " B: "+ String.format(numberFormat,rec.getB())+
-                " Angle: "+ String.format(numberFormat,rec.getAngle())+
-                " Field: "+ String.format(numberFormat,rec.getField())
+                " A: "+ String.format(numberPrintFormat,rec.getA())+
+                " B: "+ String.format(numberPrintFormat,rec.getB())+
+                " Angle: "+ String.format(numberPrintFormat,rec.getAngle())+
+                " Field: "+ String.format(numberPrintFormat,rec.getField())
         );
 
+    }
+
+    public static boolean saveTapeFileToElsewhere(String path,TapeFile file){
+        File fileOut = new File(path);
+        try {
+            if(fileOut.exists()){
+                fileOut.delete();
+                fileOut.createNewFile();
+            }
+            FileOutputStream fOutStream = new FileOutputStream(fileOut);
+
+            FileInputStream fInStream = new FileInputStream(file.theFile);
+            if(!file.inWritingMode && file.fileReadingIdx >0){
+                byte[] alreadyRead = new byte[file.fileReadingIdx];
+                fInStream.read(alreadyRead);
+            }
+
+            long recIdx = 0;
+            Record fRec = new Record(1f,1f,1f);
+            ByteBuffer fBuff = ByteBuffer.allocate(recordLength);
+            byte[] fBytes = new byte[recordLength];
+
+            if (!file.inWritingMode){
+                for (Record each : file.fileBuffer){
+                    fBuff.putFloat(each.getA());
+                    fBuff.putFloat(each.getB());
+                    fBuff.putFloat(each.getAngle());
+                    fOutStream.write(fBuff.array());
+                    fBuff.clear();
+                }
+            }
+
+            //this if is not a return, cuz we still may want to return the file buffer after the loop
+            if (file.theFile.length() > 0){
+                while(fInStream.read(fBytes) == recordLength){
+                    fBuff.clear();
+                    fBuff.put(fBytes);
+                    fOutStream.write(fBuff.array());
+                }
+            }
+
+            fBuff.clear();
+            if (file.inWritingMode){
+                for (Record each : file.fileBuffer){
+                    fBuff.putFloat(each.getA());
+                    fBuff.putFloat(each.getB());
+                    fBuff.putFloat(each.getAngle());
+                    fOutStream.write(fBuff.array());
+                    fBuff.clear();
+                }
+            }
+
+            fInStream.close();
+            fOutStream.close();
+            return true;
+        }
+        catch(FileNotFoundException e){
+            System.err.println("FNF error: " + e);
+        }
+        catch(IOException e) {
+            System.err.println("IO error: " + e);
+        }
+
+        return false;
+    }
+
+    //creates file in writing mode and saves all records from the file specified by the pathFrom
+    public static TapeFile readFromTapeFile(String pathTo,String pathFrom){
+        TapeFile retFile = new TapeFile(pathTo);
+        File fromFile = new File(pathFrom);
+
+        try {
+            if(!fromFile.exists()){
+                throw new FileNotFoundException();
+            }
+
+            FileInputStream fInStream = new FileInputStream(fromFile);
+
+            ByteBuffer fBuff = ByteBuffer.allocate(recordLength);
+            byte[] fBytes = new byte[recordLength];
+
+            while(fInStream.read(fBytes) == recordLength){
+                fBuff.clear();
+                fBuff.put(fBytes);
+                fBuff.flip();
+
+                retFile.saveRecord(new Record(
+                        fBuff.getFloat(),
+                        fBuff.getFloat(),
+                        fBuff.getFloat()
+                ));
+            }
+
+            fInStream.close();
+        }
+        catch(FileNotFoundException e){
+            System.err.println("FNF error: " + e);
+        }
+        catch(IOException e) {
+            System.err.println("IO error: " + e);
+        }
+
+        return retFile;
     }
 
 }

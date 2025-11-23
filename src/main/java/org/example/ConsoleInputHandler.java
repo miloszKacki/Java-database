@@ -3,13 +3,11 @@ package org.example;
 import java.util.Objects;
 
 public class ConsoleInputHandler {
-    //TODO make all print args into one arg parameter
-
     //Is supposed to make program do what is in the args
     //args it handles:
     //ModeOfOperation:Keyboard/Random,NumberOfRandomRecords/ExistingFile,Filepath
     //SortOrder:Asc/Desc
-    //Display:PhaseNum,ReadNum,SaveNum,PEachPhase,PBeforeSort,PAfterSort TODO implement those in other classes
+    //Display:PhaseNum,FReadNum,FSaveNum,DReadNum,DSaveNum,PEachPhase,PBeforeSort,PAfterSort,SaveInput
 
     public SortOptions options;
 
@@ -23,13 +21,13 @@ public class ConsoleInputHandler {
     private void handleModeOfOperation(String[] params){
         if (Objects.equals(params[0], "Keyboard")){
             options.modeOfOperation = SortOptions.Mode.Keyboard;
-            System.out.println("keyboard input not supported yet");
+            if(params.length > 1) options.keyRecNum = Integer.parseInt(params[1]);
         } else if (Objects.equals(params[0], "Random")) {
             options.modeOfOperation = SortOptions.Mode.Random;
             if(params.length > 1) options.randRecNum = Integer.parseInt(params[1]);
         } else if (Objects.equals(params[0], "ExistingFile")) {
             options.modeOfOperation = SortOptions.Mode.File;
-            if(params.length > 1) options.filePath = params[1];
+            if(params.length > 1) options.inFilePath = params[1];
         }
     }
     private void handlePrintEachPhase(String[] params){
@@ -65,15 +63,18 @@ public class ConsoleInputHandler {
     private void handleDisplayResults(String[] params){
         for (String each : params){
             if (Objects.equals(each, "PhaseNum")) options.printPhaseNum = true;
-            if (Objects.equals(each, "ReadNum")) options.printFReadNum = true;
-            if (Objects.equals(each, "SaveNum")) options.printFSaveNum = true;
+            if (Objects.equals(each, "FReadNum")) options.printFReadNum = true;
+            if (Objects.equals(each, "FSaveNum")) options.printFSaveNum = true;
+            if (Objects.equals(each, "DReadNum")) options.printDReadNum = true;
+            if (Objects.equals(each, "DSaveNum")) options.printDSaveNum = true;
             if (Objects.equals(each, "PEachPhase")) options.printEachPhase = true;
             if (Objects.equals(each, "PBeforeSort")) options.printBeforeSort = true;
             if (Objects.equals(each, "PAfterSort")) options.printAfterSort = true;
+            if (Objects.equals(each, "SaveInput")) options.saveInput = true;
         }
     }
     private String[] findArgParameters(String Argument, String[] programArgs){
-        String outArgs = "null";
+        String outArgs = "noArg";
         for (String pArg : programArgs){
             if (Objects.equals(pArg.split(":")[0], Argument))
                 outArgs = pArg.split(":")[1];
